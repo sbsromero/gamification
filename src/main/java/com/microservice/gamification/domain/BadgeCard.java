@@ -5,12 +5,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Getter
 @Entity
 @RequiredArgsConstructor
+@ToString
+@EqualsAndHashCode
 public class BadgeCard {
 
 	@Id
@@ -19,7 +23,7 @@ public class BadgeCard {
 	private final Long bagdeId;
 	
 	private final Long userId;
-	private final long bagdeTimestamp;
+	private final long badgeTimestamp;
 	private final Badge bagde;
 	
 	//Empty constructor for JSON/JPA
