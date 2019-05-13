@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.microservice.gamification.domain.Badge;
@@ -21,10 +20,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GameServiceImpl implements GameService {
 
+	public static final int LUCKY_NUMBER = 42;
+	
 	private BadgeCardRepository badgeCardRepository;
 	private ScoreCardRepository scoreCardRepository;
 
-	@Autowired
 	public GameServiceImpl(BadgeCardRepository badgeCardRepository, ScoreCardRepository scoreCardRepository) {
 		this.badgeCardRepository = badgeCardRepository;
 		this.scoreCardRepository = scoreCardRepository;
