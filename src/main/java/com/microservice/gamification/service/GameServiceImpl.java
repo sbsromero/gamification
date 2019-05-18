@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.microservice.gamification.client.MultiplicationResultAttemptClient;
+import com.microservice.gamification.client.dto.MultiplicationResultAttempt;
 import com.microservice.gamification.domain.Badge;
 import com.microservice.gamification.domain.BadgeCard;
 import com.microservice.gamification.domain.GameStats;
@@ -21,13 +23,16 @@ import lombok.extern.slf4j.Slf4j;
 public class GameServiceImpl implements GameService {
 
 	public static final int LUCKY_NUMBER = 42;
-	
+
 	private BadgeCardRepository badgeCardRepository;
 	private ScoreCardRepository scoreCardRepository;
+	private MultiplicationResultAttemptClient attemptClient;
 
-	public GameServiceImpl(BadgeCardRepository badgeCardRepository, ScoreCardRepository scoreCardRepository) {
+	public GameServiceImpl(BadgeCardRepository badgeCardRepository, ScoreCardRepository scoreCardRepository,
+			MultiplicationResultAttemptClient attemptClient) {
 		this.badgeCardRepository = badgeCardRepository;
 		this.scoreCardRepository = scoreCardRepository;
+		this.attemptClient = attemptClient;
 	}
 
 	@Override
@@ -63,6 +68,14 @@ public class GameServiceImpl implements GameService {
 			badgeCards.add(firstWonBadge);
 		}
 
+		// lucky number badge
+		MultiplicationResultAttempt attempt = attemptClient.retrieveMultiplicationResultAttemptbyId(attemptId);
+		if(!containsBadge(badgeCardList, Badge.LUCKY_NUMBER) && (LUCKY_NUMBER == attempt.getMultiplicationFactorA() ||
+				LUCKY_NUMBER == attempt.getMultiplicationFactorB())) {
+			BadgeCard luckyNumberBadge = giveBadgeToUser(Badge.LUCKY_NUMBER, userId);
+			badgeCards.add(luckyNumberBadge);
+		}
+
 		return badgeCards;
 	}
 
@@ -73,9 +86,9 @@ public class GameServiceImpl implements GameService {
 		return new GameStats(userId, score, badgeCards.stream().map(BadgeCard::getBagde).collect(Collectors.toList()));
 	}
 
-	private Optional<BadgeCard> checkAndGiveBadgeBasedOnScore(List<BadgeCard> badgeCards, Badge badge,
-			int score, int scoreThreshold, Long userId) {
-		if(score >= scoreThreshold && !containsBadge(badgeCards, badge)) {
+	private Optional<BadgeCard> checkAndGiveBadgeBasedOnScore(List<BadgeCard> badgeCards, Badge badge, int score,
+			int scoreThreshold, Long userId) {
+		if (score >= scoreThreshold && !containsBadge(badgeCards, badge)) {
 			return Optional.of(giveBadgeToUser(badge, userId));
 		}
 		return Optional.empty();
@@ -86,11 +99,10 @@ public class GameServiceImpl implements GameService {
 	}
 
 	private BadgeCard giveBadgeToUser(Badge badge, Long userId) {
-		BadgeCard badgeCard = new BadgeCard(userId,badge);
+		BadgeCard badgeCard = new BadgeCard(userId, badge);
 		badgeCardRepository.save(badgeCard);
 		log.info("User with id {} won a new badge: {}", userId, badge);
 		return badgeCard;
 	}
-
 
 }
